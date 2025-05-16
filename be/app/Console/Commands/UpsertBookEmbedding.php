@@ -76,7 +76,16 @@ class UpsertBookEmbedding extends Command
     {
         $this->info("🔍 Processing batch of " . $books->count() . " books...");
         
-        $texts = $books->map(fn($b) => $b->title . ' ' . $b->description)->toArray();
+        $texts = $books->map(function($book) {
+            return implode(' ', [
+                'Title:', $book->title,
+                'Author:', $book->author,
+                'Description:', $book->description,
+                'Published in:', $book->publication_year,
+                'Category:', $book->category->name ?? 'Uncategorized',
+                'Status:', $book->status
+            ]);
+        })->toArray();
 
         // Get embeddings from JINA AI
         $response = Http::withHeaders([

@@ -121,14 +121,22 @@ class BookController extends Controller
 
             // Search in Qdrant
             $qdrantUrl = 'http://194.233.95.147:44912/collections/books/points/search';
-            \Log::debug('Sending request to Qdrant', ['url' => $qdrantUrl, 'vector_length' => count($embedding)]);
+            \Log::info('AI Search Query', [
+                'query' => $query,
+                'vector_length' => count($embedding)
+            ]);
             
             try {
                 $searchResponse = Http::timeout(30)->post($qdrantUrl, [
                     'vector' => $embedding,
                     'top' => 5,
+                    'score_threshold' => 0.3,
                     'with_payload' => true,
-                    'with_vectors' => false
+                    'with_vectors' => false,
+                    'params' => [
+                        'hnsw_ef' => 128,
+                        'exact' => false
+                    ]
                 ]);
 
                 \Log::debug('Qdrant response status:', ['status' => $searchResponse->status()]);
